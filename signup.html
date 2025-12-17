@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup - SmartDonate</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="outer-box">
+    <div class="inner-box">
+      <header class="signup-header">
+        <h1>Signup</h1>
+        <!-- <p id="abc">It's just takes 30 sec</p> -->
+      </header>
+
+      <main class="signup-body">
+        <form id="signup-form">
+          <p>
+            <label for="Fullname">Full Name</label>
+            <input type="text" id="Fullname" placeholder="Ayush Mishra" required>
+          </p>
+
+          <p>
+            <label for="email">Your email address</label>
+            <input type="email" id="email" placeholder="ayushm7755@gmail.com" required>
+          </p>
+
+          <p>
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="at least 8 characters" required>
+          </p>
+
+          <p>
+            <input type="submit" id="Submit" value="Login">
+          </p>
+        </form>
+      </main>
+
+      <footer class="signup-footer">
+        <p>Already have an account? <a href="index.html">Go to app</a></p>
+      </footer>
+    </div>
+
+    <div class="circle c1"></div>
+    <div class="circle c2"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('signup-form');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById('Fullname').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!name || !email || password.length < 8) {
+        alert('Please fill all fields. Password must be at least 8 characters.');
+        return;
+      }
+
+      // Simple demo "auth" store
+      localStorage.setItem('sd_user', JSON.stringify({
+        name,
+        email,
+        loggedIn: true
+      }));
+
+      // Redirect to main app
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>

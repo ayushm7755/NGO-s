@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SmartDonate — Frontend Demo</title>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    :root{
+      --accent: #2563eb;
+      --muted: #6b7280;
+      --card-bg: #ffffff;
+      --page-bg: #f3f4f6;
+      --success: #10b981;
+      --danger: #ef4444;
+      --glass: rgba(255,255,255,0.6);
+    }
+
+    body { background: var(--page-bg); color: #111827; line-height: 1.5; padding: 24px; }
+
+    header { display:flex; align-items:center; justify-content:space-between; gap:16px; max-width:1200px; margin:0 auto 18px; flex-wrap:wrap; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo {
+      width:44px; height:44px; border-radius:8px; background:linear-gradient(135deg,var(--accent),#7c3aed); display:flex; align-items:center; justify-content:center; color:white; font-weight:700;
+    }
+    .nav { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .nav button { background:none; border:1px solid transparent; padding:8px 12px; border-radius:8px; cursor:pointer; color:var(--muted); }
+    .nav button.primary { background:var(--accent); color:white; border-color:transparent; }
+
+    .container { max-width:1200px; margin:0 auto; display:grid; grid-template-columns: 1fr 320px; gap:20px; align-items:start; }
+
+    .hero { background:linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6)); padding:18px; border-radius:12px; display:flex; gap:16px; align-items:center; box-shadow: 0 6px 18px rgba(0,0,0,0.06); flex-wrap:wrap; }
+    .hero .left { flex:1 1 240px; }
+    .hero h1 { font-size:20px; margin-bottom:6px; }
+    .hero p { color:var(--muted); margin-bottom:12px; }
+    .hero .search { display:flex; gap:8px; flex-wrap:wrap; }
+    .search input { flex:1 1 180px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; }
+    .search button { padding:10px 14px; border-radius:8px; border:none; background:var(--accent); color:white; cursor:pointer; }
+
+    .main { }
+    .controls { display:flex; gap:10px; align-items:center; margin:12px 0; flex-wrap:wrap; }
+    .filters { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .filters select, .filters button { padding:8px 10px; border-radius:8px; border:1px solid #e5e7eb; background:white; }
+
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap:14px; }
+
+    .card { background:var(--card-bg); padding:14px; border-radius:12px; box-shadow: 0 6px 18px rgba(0,0,0,0.04); display:flex; flex-direction:column; gap:10px; }
+    .card img { width:100%; height:140px; object-fit:cover; border-radius:8px; }
+    .card h3 { font-size:16px; }
+    .card p { color:var(--muted); font-size:13px; }
+    .meta { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+    .progress { height:10px; background:#e6e9ee; border-radius:999px; overflow:hidden; margin-top:6px; }
+    .progress > i { display:block; height:100%; background:linear-gradient(90deg,var(--accent), #7c3aed); width:0%; }
+
+    .card .actions { display:flex; gap:8px; margin-top:4px; }
+    .btn { padding:8px 10px; border-radius:8px; border:none; cursor:pointer; }
+    .btn.primary { background:var(--accent); color:white; }
+    .btn.ghost { background:transparent; border:1px solid #e5e7eb; color:var(--muted); }
+
+    aside { position:sticky; top:24px; align-self:start; background:linear-gradient(180deg, var(--glass), rgba(255,255,255,0.7)); padding:14px; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,0.05); }
+    .kpi { display:flex; justify-content:space-between; margin-bottom:12px; }
+    .kpi strong { font-size:18px; }
+    .quick-donate label{ display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
+    .quick-donate input, .quick-donate select { width:100%; padding:10px; margin-bottom:8px; border-radius:8px; border:1px solid #e5e7eb; }
+    .small { font-size:13px; color:var(--muted); }
+
+    .modal-backdrop { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,0.4); z-index:1000; }
+    .modal { background:white; width:100%; max-width:520px; border-radius:10px; padding:18px; box-shadow:0 20px 40px rgba(0,0,0,0.25); }
+    .modal header { display:flex; justify-content:space-between; align-items:center; }
+    .close { background:transparent; border:none; font-size:20px; cursor:pointer; }
+
+    footer { max-width:1200px; margin:20px auto 0; text-align:center; color:var(--muted); font-size:13px; }
+
+    /* User icon & dropdown */
+    .avatar-btn{
+      width:32px;
+      height:32px;
+      border-radius:50%;
+      border:none;
+      background:#e5e7eb;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      font-size:14px;
+      color:#111827;
+    }
+    .user-dropdown{
+      position:absolute;
+      top:40px;
+      right:0;
+      background:white;
+      border-radius:8px;
+      box-shadow:0 8px 20px rgba(0,0,0,0.12);
+      padding:8px 10px;
+      min-width:140px;
+      display:none;
+      z-index:1100;
+    }
+    .user-name{
+      font-size:14px;
+      font-weight:600;
+      margin-bottom:6px;
+    }
+    .dropdown-item{
+      width:100%;
+      text-align:left;
+      padding:6px 8px;
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      font-size:13px;
+      border-radius:4px;
+    }
+    .dropdown-item:hover{
+      background:#f3f4f6;
+    }
+
+    @media (max-width:980px){
+      .container { grid-template-columns: 1fr; }
+      aside { position:relative; top:auto; }
+      header { flex-direction:column; align-items:flex-start; gap:12px; }
+    }
+
+    @media (max-width:600px){
+      body{ padding:16px; }
+      .hero{ padding:14px; }
+      .hero h1{ font-size:18px; }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // If not logged in, force redirect to signup
+    (function checkAuth(){
+      try {
+        const raw = localStorage.getItem('sd_user');
+        if(!raw){
+          window.location.href = 'signup.html';
+        }
+      } catch(e){
+        window.location.href = 'signup.html';
+      }
+    })();
+  </script>
+
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden>SD</div>
+      <div>
+        <div style="font-weight:700">SmartDonate</div>
+        <div style="font-size:12px;color:var(--muted)">Transparent. Fast. Trustworthy.</div>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="Main navigation">
+      <button class="primary" id="create-cause">Create Cause</button>
+      <button onclick="showAll()">All Causes</button>
+      <button onclick="showTop()">Top</button>
+
+      <!-- User area -->
+      <div id="user-area" style="display:flex; align-items:center; gap:8px; margin-left:8px; position:relative;">
+        <button id="login-btn">Sign Up / Login</button>
+
+        <div id="user-menu" style="display:none; position:relative;">
+          <button id="user-avatar" class="avatar-btn">
+            <span id="user-initial">U</span>
+          </button>
+          <div id="user-dropdown" class="user-dropdown">
+            <div id="user-name" class="user-name">User</div>
+            <button id="logout-btn" class="dropdown-item">Logout</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="container">
+    <main class="main">
+
+      <section class="hero" aria-labelledby="hero-heading">
+        <div class="left">
+          <h1 id="hero-heading">Support causes you care about</h1>
+          <p>Find vetted causes, donate securely, and track how funds are used — demo frontend only.</p>
+
+          <div class="search" role="search">
+            <input id="search-input" placeholder="Search causes, e.g. education, health..." aria-label="Search causes" />
+            <button id="search-btn">Search</button>
+          </div>
+        </div>
+
+        <div style="width:220px;text-align:right; flex:0 0 auto;">
+          <div style="font-size:12px;color:var(--muted)">Featured</div>
+          <div style="font-weight:700;font-size:18px;margin-top:8px;">Education for 200 kids</div>
+          <div class="small" style="margin-top:8px;">Raised <strong id="featured-raised">₹45,000</strong> of ₹1,00,000</div>
+        </div>
+      </section>
+
+      <div class="controls">
+        <div class="filters">
+          <select id="category-filter" aria-label="Filter by category">
+            <option value="all">All categories</option>
+            <option value="education">Education</option>
+            <option value="health">Health</option>
+            <option value="disaster">Disaster Relief</option>
+            <option value="environment">Environment</option>
+            <option value="community">Community</option>
+          </select>
+
+          <button id="sort-btn">Sort: Most Needed</button>
+        </div>
+
+        <div style="flex:1"></div>
+
+        <div class="small">Showing <span id="count">0</span> causes</div>
+      </div>
+
+      <section class="grid" id="causes-grid" aria-live="polite"></section>
+
+    </main>
+
+    <aside>
+      <div class="kpi">
+        <div>
+          <div class="small">Total Raised</div>
+          <strong id="total-raised">₹0</strong>
+        </div>
+        <div>
+          <div class="small">Active Causes</div>
+          <strong id="total-causes">0</strong>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-weight:700; margin-bottom:8px;">Quick Donate</div>
+        <div class="quick-donate">
+          <label for="quick-cause">Choose cause</label>
+          <select id="quick-cause"></select>
+
+          <label for="quick-amount">Amount (₹)</label>
+          <input id="quick-amount" type="number" min="10" placeholder="100" />
+
+          <button id="quick-donate-btn" class="btn primary" style="width:100%">Donate</button>
+          <div class="small" style="margin-top:8px;">This simulates a secure donation and updates the demo only.</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-weight:700; margin-bottom:8px;">About SmartDonate (demo)</div>
+        <div class="small">All payments here are mocked in the browser (no backend). For production you'll need server-side payment processing and verification and proper KYC and receipts.</div>
+      </div>
+    </aside>
+  </div>
+
+  <div id="modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document" aria-labelledby="donate-title">
+      <header>
+        <h2 id="donate-title" style="font-size:16px">Donate</h2>
+        <button class="close" id="modal-close" aria-label="Close">&times;</button>
+      </header>
+
+      <form id="donate-form" style="margin-top:12px;">
+        <div style="margin-bottom:8px;">
+          <label for="donor-name">Your name</label><br/>
+          <input id="donor-name" required placeholder="Name" style="width:100%; padding:8px; margin-top:6px; border-radius:8px; border:1px solid #e5e7eb;" />
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1">
+            <label for="donor-amount">Amount (₹)</label><br/>
+            <input id="donor-amount" type="number" min="10" required placeholder="500" style="width:100%; padding:8px; margin-top:6px; border-radius:8px; border:1px solid #e5e7eb;" />
+          </div>
+          <div style="flex:1">
+            <label for="donor-note">Note (optional)</label><br/>
+            <input id="donor-note" placeholder="In memory of..." style="width:100%; padding:8px; margin-top:6px; border-radius:8px; border:1px solid #e5e7eb;" />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button type="submit" class="btn primary">Pay securely</button>
+          <button type="button" id="modal-cancel" class="btn ghost">Cancel</button>
+        </div>
+
+        <div id="donate-status" class="small" style="margin-top:10px; color:var(--muted)"></div>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    Demo frontend only — built with plain HTML/CSS/JS. Customize to connect with real APIs.
+  </footer>
+
+  <script>
+    function formatINR(n){
+      return "₹" + Number(n).toLocaleString('en-IN');
+    }
+
+    const SAMPLE_CAUSES = [
+      { id: 'c1', title: 'Education for 200 kids', category: 'education', image: '', target: 100000, raised: 45000, description: 'Provide school supplies and tuition for children in need.' },
+      { id: 'c2', title: 'Medical Aid: Cancer support', category: 'health', image: '', target: 200000, raised: 90000, description: 'Help fund treatments and medicines for patients.' },
+      { id: 'c3', title: 'Flood Relief: Immediate help', category: 'disaster', image: '', target: 150000, raised: 60000, description: 'Provide food, shelter and pumps for flood affected regions.' },
+      { id: 'c4', title: 'Plant 10,000 Trees', category: 'environment', image: '', target: 50000, raised: 22000, description: 'Community reforestation and maintenance.' },
+      { id: 'c5', title: 'Community Kitchen for Slums', category: 'community', image: '', target: 80000, raised: 10000, description: 'Daily nutritious meals for families.' }
+    ];
+
+    let causes = [];
+    let selectedCause = null;
+
+    const grid = document.getElementById('causes-grid');
+    const countEl = document.getElementById('count');
+    const totalRaisedEl = document.getElementById('total-raised');
+    const totalCausesEl = document.getElementById('total-causes');
+    const quickCauseSelect = document.getElementById('quick-cause');
+    const featuredRaised = document.getElementById('featured-raised');
+    const modalBackdrop = document.getElementById('modal');
+    const donateForm = document.getElementById('donate-form');
+    const donateStatus = document.getElementById('donate-status');
+
+    function loadCauses(){
+      const raw = localStorage.getItem('smartdonate_causes');
+      if(raw){
+        try {
+          causes = JSON.parse(raw);
+        } catch(e) {
+          causes = [...SAMPLE_CAUSES];
+          saveCauses();
+        }
+      } else {
+        causes = [...SAMPLE_CAUSES];
+        saveCauses();
+      }
+    }
+
+    function saveCauses(){
+      localStorage.setItem('smartdonate_causes', JSON.stringify(causes));
+    }
+
+    function renderCauses(filter = { category: 'all', q: '' }){
+      grid.innerHTML = '';
+      const filtered = causes.filter(c => {
+        if(filter.category !== 'all' && c.category !== filter.category) return false;
+        if(filter.q && !(c.title.toLowerCase().includes(filter.q) || c.description.toLowerCase().includes(filter.q))) return false;
+        return true;
+      });
+
+      countEl.textContent = filtered.length;
+      totalCausesEl.textContent = causes.length;
+      totalRaisedEl.textContent = formatINR(causes.reduce((s, c) => s + Number(c.raised), 0));
+      if(causes[0]) featuredRaised.textContent = formatINR(causes[0].raised);
+
+      filtered.forEach(c => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.setAttribute('aria-labelledby', `title-${c.id}`);
+
+        const imgUrl = c.image || `https://picsum.photos/seed/${encodeURIComponent(c.id)}/600/400`;
+
+        card.innerHTML = `
+          <img src="${imgUrl}" alt="${escapeHtml(c.title)} image" />
+          <div>
+            <h3 id="title-${c.id}">${escapeHtml(c.title)}</h3>
+            <p>${escapeHtml(c.description)}</p>
+            <div class="meta">
+              <div>${formatINR(c.raised)} raised</div>
+              <div>${Math.round((c.raised / c.target) * 100)}% of ${formatINR(c.target)}</div>
+            </div>
+            <div class="progress" aria-hidden><i style="width:${Math.min(100, (c.raised / c.target) * 100)}%"></i></div>
+            <div class="actions">
+              <button class="btn primary" data-action="donate" data-id="${c.id}">Donate</button>
+              <button class="btn ghost" data-action="share" data-id="${c.id}">Share</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      grid.querySelectorAll('button[data-action]').forEach(btn => {
+        const action = btn.getAttribute('data-action');
+        const id = btn.getAttribute('data-id');
+        if(action === 'donate'){
+          btn.addEventListener('click', () => openDonateModal(id));
+        } else if(action === 'share'){
+          btn.addEventListener('click', () => {
+            alert('Share link (demo): ' + location.origin + location.pathname + '?cause=' + encodeURIComponent(id));
+          });
+        }
+      });
+
+      updateQuickCauseOptions();
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function updateQuickCauseOptions(){
+      quickCauseSelect.innerHTML = '';
+      causes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.title;
+        quickCauseSelect.appendChild(opt);
+      });
+    }
+
+    function openDonateModal(causeId){
+      selectedCause = causes.find(c => c.id === causeId);
+      if(!selectedCause) return alert('Cause not found');
+      document.getElementById('donate-title').textContent = 'Donate — ' + selectedCause.title;
+      document.getElementById('donor-name').value = '';
+      document.getElementById('donor-amount').value = '';
+      document.getElementById('donor-note').value = '';
+      donateStatus.textContent = '';
+      showModal(true);
+    }
+
+    function showModal(show){
+      modalBackdrop.style.display = show ? 'flex' : 'none';
+      modalBackdrop.setAttribute('aria-hidden', show ? 'false' : 'true');
+    }
+
+    function simulatePayment(amount){
+      return new Promise((resolve) => {
+        donateStatus.textContent = 'Processing payment...';
+        setTimeout(() => {
+          if(Math.random() < 0.95){
+            donateStatus.textContent = 'Payment successful! Updating cause...';
+            resolve({ success: true, txid: 'TX' + Date.now() });
+          } else {
+            donateStatus.textContent = 'Payment failed. Please try again.';
+            resolve({ success: false });
+          }
+        }, 900);
+      });
+    }
+
+    donateForm.addEventListener('submit', async function(e){
+      e.preventDefault();
+      if(!selectedCause) return alert('No cause selected');
+
+      const name = document.getElementById('donor-name').value.trim();
+      const amount = Number(document.getElementById('donor-amount').value);
+      const note = document.getElementById('donor-note').value.trim();
+
+      if(!name || !amount || amount < 10){
+        donateStatus.textContent = 'Please enter a valid name and amount (min ₹10).';
+        return;
+      }
+
+      const result = await simulatePayment(amount);
+      if(result.success){
+        selectedCause.raised = Number(selectedCause.raised) + amount;
+        selectedCause.donations = selectedCause.donations || [];
+        selectedCause.donations.push({
+          donor: name,
+          amount,
+          note,
+          txid: result.txid,
+          date: new Date().toISOString()
+        });
+
+        saveCauses();
+        renderCauses(getCurrentFilter());
+        showModal(false);
+        alert('Thank you! Donation recorded. (Demo only — no real payment processed.)');
+      } else {
+        donateStatus.textContent = 'Payment failed. Please try again later.';
+      }
+    });
+
+    document.getElementById('modal-close').addEventListener('click', () => showModal(false));
+    document.getElementById('modal-cancel').addEventListener('click', () => showModal(false));
+    modalBackdrop.addEventListener('click', (e) => { if(e.target === modalBackdrop) showModal(false); });
+
+    document.getElementById('quick-donate-btn').addEventListener('click', async () => {
+      const causeId = quickCauseSelect.value;
+      const amount = Number(document.getElementById('quick-amount').value);
+      if(!causeId || !amount || amount < 10){ alert('Please select a cause and enter amount ₹10+'); return; }
+      openDonateModal(causeId);
+      document.getElementById('donor-amount').value = amount;
+    });
+
+    document.getElementById('search-btn').addEventListener('click', () => {
+      const q = document.getElementById('search-input').value.trim().toLowerCase();
+      const cat = document.getElementById('category-filter').value;
+      renderCauses({ category: cat, q });
+    });
+
+    document.getElementById('category-filter').addEventListener('change', () => {
+      document.getElementById('search-btn').click();
+    });
+
+    function showAll(){ renderCauses(getCurrentFilter()); }
+    function showTop(){
+      causes.sort((a,b) => (b.target - b.raised) - (a.target - a.raised));
+      renderCauses(getCurrentFilter());
+    }
+
+    document.getElementById('create-cause').addEventListener('click', () => {
+      const id = 'c' + (Date.now());
+      const newCause = {
+        id,
+        title: 'New Cause ' + new Date().toLocaleString(),
+        category: 'community',
+        image: '',
+        target: 50000,
+        raised: 0,
+        description: 'A new community cause (created in demo).'
+      };
+      causes.unshift(newCause);
+      saveCauses();
+      renderCauses(getCurrentFilter());
+      alert('New cause created (demo). You can now donate to it.');
+    });
+
+    function getCurrentFilter(){
+      return {
+        category: document.getElementById('category-filter').value || 'all',
+        q: document.getElementById('search-input').value.trim().toLowerCase()
+      };
+    }
+
+    function ensureImages(){
+      causes.forEach(c => {
+        if(!c.image) c.image = `https://picsum.photos/seed/${encodeURIComponent(c.id)}/800/500`;
+      });
+    }
+
+    (function init(){
+      loadCauses();
+      ensureImages();
+      renderCauses({ category: 'all', q: '' });
+
+      const params = new URLSearchParams(location.search);
+      const causeId = params.get('cause');
+      if(causeId){
+        setTimeout(() => openDonateModal(causeId), 800);
+      }
+    })();
+
+    function updateTotalsUI(){
+      totalRaisedEl.textContent = formatINR(causes.reduce((s,c)=>s+Number(c.raised),0));
+      totalCausesEl.textContent = causes.length;
+    }
+
+    // ===== AUTH UI =====
+    function getCurrentUser(){
+      try {
+        return JSON.parse(localStorage.getItem('sd_user'));
+      } catch(e){
+        return null;
+      }
+    }
+
+    function setUserUI(){
+      const user = getCurrentUser();
+      const loginBtn = document.getElementById('login-btn');
+      const userMenu = document.getElementById('user-menu');
+      const userInitial = document.getElementById('user-initial');
+      const userName = document.getElementById('user-name');
+      const dropdown = document.getElementById('user-dropdown');
+
+      if(user && user.loggedIn){
+        loginBtn.style.display = 'none';
+        userMenu.style.display = 'block';
+
+        const initial = user.name ? user.name.trim().charAt(0).toUpperCase() : 'U';
+        userInitial.textContent = initial;
+        userName.textContent = user.name || 'User';
+      } else {
+        loginBtn.style.display = 'inline-block';
+        userMenu.style.display = 'none';
+        if(dropdown) dropdown.style.display = 'none';
+      }
+    }
+
+    document.getElementById('login-btn').addEventListener('click', function(){
+      window.location.href = 'signup.html';
+    });
+
+    document.getElementById('user-avatar').addEventListener('click', function(){
+      const dropdown = document.getElementById('user-dropdown');
+      dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', function(){
+      localStorage.removeItem('sd_user');
+      alert('You have been logged out.');
+      setUserUI();
+      window.location.href = 'signup.html';
+    });
+
+    document.addEventListener('click', function(e){
+      const dropdown = document.getElementById('user-dropdown');
+      const avatar = document.getElementById('user-avatar');
+      if(!dropdown || !avatar) return;
+      if(!dropdown.contains(e.target) && !avatar.contains(e.target)){
+        dropdown.style.display = 'none';
+      }
+    });
+
+    (function initAuth(){
+      setUserUI();
+    })();
+  </script>
+</body>
+</html>
